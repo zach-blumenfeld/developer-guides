@@ -3,7 +3,7 @@ include::_graphacademy_llm.adoc[]
 :slug: llm-graph-builder
 :author: Michael Hunger, Tomaz Bratanic, Persistent
 :category: genai-ecosystem
-:tags: 
+:tags:
 :neo4j-versions: 5.x
 :page-pagination:
 :page-product: llm-graph-builder
@@ -12,7 +12,7 @@ include::_graphacademy_llm.adoc[]
 == Prerequisites
 
 You will need to have a Neo4j Database V5.18 or later with https://neo4j.com/docs/apoc/current/installation/[APOC installed^] to use this Knowledge Graph Builder.
-You can use any https://neo4j.com/aura/[Neo4j Aura database^] (including the free tier database). Neo4j Aura automatically includes APOC and run on the latest Neo4j version, making it a great choice to get started quickly. 
+You can use any https://neo4j.com/aura/[Neo4j Aura database^] (including the free tier database). Neo4j Aura automatically includes APOC and run on the latest Neo4j version, making it a great choice to get started quickly.
 
 You can also use the free trial in https://sandbox.neo4j.com[Neo4j Sandbox^], which also includes Graph Data Science.
 If want to use https://neo4j.com/product/developer-tools/#desktop[Neo4j Desktop^] instead, you need to configure your `NEO4J_URI=bolt://host.docker.internal` to allow the Docker container to access the network running on your computer.
@@ -60,7 +60,7 @@ You can configure the following LLM models besides the ones supported out of the
 * VertexAI (Gemini 1.0) (default)
 * VertexAI (Gemini 1.5)
 * Diffbot
-* Bedrock models 
+* Bedrock models
 * Anthropic
 * OpenAI API compatible models like Ollama, Groq, Fireworks
 
@@ -97,7 +97,7 @@ In your `docker-compose.yml` you need to pass the variables through:
 
 === Additional configs
 
-By default, the input sources will be: Local files, Youtube, Wikipedia and AWS S3. 
+By default, the input sources will be: Local files, Youtube, Wikipedia and AWS S3.
 This is the default config applied if you do not overwrite it in your .env file:
 
 [source,env]
@@ -142,7 +142,7 @@ yarn run dev
 ----
 cd backend
 python -m venv envName
-source envName/bin/activate 
+source envName/bin/activate
 pip install -r requirements.txt
 uvicorn score:app --reload
 ----
