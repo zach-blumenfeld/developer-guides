@@ -1,9 +1,6 @@
 name: Docs
 
 on:
-  push:
-    branches:
-      - 'publish'
   pull_request:
     branches:
       - '*'
