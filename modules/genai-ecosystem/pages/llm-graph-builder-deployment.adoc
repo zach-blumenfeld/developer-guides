@@ -171,7 +171,7 @@ uvicorn score:app --reload
 | Env Variable Name | Mandatory/Optional | Default Value | Description
 | BACKEND_API_URL | Optional | http://localhost:8000 | URL for backend API
 | REACT_APP_SOURCES | Optional | local,youtube,wiki,s3 | List of input sources that will be available
-| BLOOM_URL | Optional | https://workspace-preview.neo4j.io/workspace/explore?connectURL={CONNECT_URL}&search=Show+me+a+graph | URL for Bloom visualization
+| BLOOM_URL | Optional | https://workspace-preview.neo4j.io/workspace/explore?connectURL=\{CONNECT_URL}&search=Show+me+a+graph | URL for Bloom visualization
 |===
 
 
