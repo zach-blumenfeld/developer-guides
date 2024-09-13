@@ -11,17 +11,17 @@ include::_graphacademy_llm.adoc[]
 
 //image::https://dist.neo4j.com/wp-content/uploads/20240618104511/build-kg-genai-e1718732751482.png[width=800, align=center,link="https://llm-graph-builder.neo4jlabs.com/",window="_blank"]
 
-//TODO: Hero Image
-GenAI + GraphRAG can help improve customer experiences throughout multiple touch-points in their journey, from
+Use GenAI + GraphRAG to improve customer experiences throughout multiple touch-points in the journey:
 
-* discovery: generating personalized marketing and email content, to
-* customized semantic search,
-* targeted product recommendations, and
-* compliant AI scripts for customer support,
+* *Discovery:* generating personalized marketing and email content
+* *Search:* tailored semantic search to improve conversion
+* *Recommendations:* targeted product recommendations
+* *Support:* compliant AI scripts for customer support
 
-This guide walks through setting up a full-stack GraphRAG application for all the above using Neo4j, LangChain (with LangServ), and OpenAI. The app focuses on a retail example using the https://github.com/neo4j-product-examples/graphrag-customer-experience#:~:text=H%26M%20Personalized%20Fashion%20Recommendations%20Dataset[H&M Personalized Fashion Recommendations Dataset^], a sample of real customer purchase data that includes rich information around products including names, types, descriptions, department sections, etc. All code presented in this tutorial is available in this https://github.com/neo4j-product-examples/graphrag-customer-experience[GitHub repository^].
+This guide walks through setting up a full-stack GraphRAG application demonstrating all the above using Neo4j, LangChain (with LangServ), and OpenAI. The app focuses on a retail example using the https://github.com/neo4j-product-examples/graphrag-customer-experience#:~:text=H%26M%20Personalized%20Fashion%20Recommendations%20Dataset[H&M Personalized Fashion Recommendations Dataset^], a sample of real customer purchase data that includes rich information around products including names, types, descriptions, department sections, etc. All code can be found in the https://github.com/neo4j-product-examples/graphrag-customer-experience[GitHub repository^].
 
-//TODO: Architecture Diagram
+image::ai-cust-exp-architecture.png[align=center]
+
 == Running The App
 
 === Prerequisites
@@ -83,11 +83,25 @@ Open `http://localhost:8501` in your browser to interact with the app.
 
 To understand how each page works it helps to first under the graph data models used.  For Discovery, Search, and Recommendations we use the below model.
 
-//TODO: Schema vis
+image::ai-cust-exp-product-data-model.png[width=600, align=center]
+
 For support it resembles the below.
-//TODO: Schema vis
-=== Search
-Once you understand how the search page works it will be easier to understand Discovery & Recommendation pages. For the search page the API will first create an embedding from the search term.  It will then take the resulting query vector and some other parameters and plug them into the following query to retrieve the search result. This query personalizes the results to each user based what similar users hav e been purchasing, using a logic similar to collaborative filtering.
+
+image::ai-cust-exp-support-data-model.png[width=600, align=center]
+
+//TODO: Link for data loading
+Directions & details for data loading can be found https://github.com/neo4j-product-examples/graphrag-customer-experience?tab=readme-ov-file#populating-databases[here^]. It requires a combination of structured data loading, embedding, and named entity recognition (NER).
+
+
+=== Search Page (TODO: Pull in Workshop Notebook example to show quality improvements with new retrieval pattern))
+Once you understand how the search page works it will be easier to understand Discovery & Recommendation pages.
+The Search page uses a LangChain retriever to first perform vector search on product nodes.  It will then perform re-ranking and filtering based off a graph traversal to personalize the response.  Below is a diagram of the flow.
+
+image::ai-cust-exp-app-search-flow.png[align=center]
+
+The graph traversal improves results by using shared purchase patterns to incorporate customer preferences. The logic is similar to that of collaborative filtering.  Essentially it examines which customers have purchased similar products to the current use, then looks at other products heavily purchased by that group and cross-references against the vector search candidates.
+
+//TODO coded markdown example?
 
 [source, cypher]
 ----
@@ -110,22 +124,28 @@ RETURN (1+purchaseScore)*searchScore AS score,
     ORDER BY score DESC LIMIT $resTopK
 ----
 
-This is a post-filtering using a graph pattern.
+This is a post-filtering graph pattern.
 
 === Discovery
-The Discovery page uses the same retrieval query as above, but in an LLM chain, where the results are provided to an LLM to generate an email given context from other paramters like season/time-of-year.  Below is the LLM chain
+The Discovery page uses the same retrieval query as search, but in an LLM chain, where the results are provided to an LLM to generate an email given context from other parameters like season/time-of-year.  See diagram below.
+
+image::ai-cust-exp-app-discovery-flow.png[align=center]
+
+
+The chain itself looks this
 [source, python]
 ----
 content_chain = (
 RunnableParallel(
-{'context': (lambda x: (x['customer_interests'], x['customer_id'])) | RunnableLambda(retriever),
-'customerName': (lambda x: x['customer_name']),
-'customerInterests': (lambda x: x['customer_interests']),
-'timeofYear': (lambda x: x['time_of_year']),
+{
+ 'context': (lambda x: (x['customer_interests'], x['customer_id'])) | RunnableLambda(retriever),
+ 'customerName': (lambda x: x['customer_name']),
+ 'customerInterests': (lambda x: x['customer_interests']),
+ 'timeofYear': (lambda x: x['time_of_year']),
 })
 | prompt
 | llm
-| StrOutputParser()).with_types(input_type=ContentChainInput, output_type=ContentChainOutput)
+| StrOutputParser())
 ----
 
 In essence the search context and id for the user is passed to the retriever for the same graph query, while other details like customer name, interests, and time of year are passed to the LLM to help make decisions about choosing what content to write in the email.
@@ -151,21 +171,33 @@ Make sure to provide that https url with descriptive name text in markdown for e
 """
 ----
 
-=== Recommendations
+=== Recommendations (TODO: Pull in TSNE Graph Embedding Explanations)
 The Recommendations page uses a different type of retriever based on vector + graph embeddings.  The basic pattern is presented below.
 
-//TODO: visual model of chain
-We use Neo4j Graph Data Science (GDS) to create these embeddings. The embeddings create common co-purchase clusters as seen below
-//TODO: TSNE plot snapshot (from notebook
+image::ai-cust-exp-app-rec-flow.png[align=center]
+
+
+We use Neo4j Graph Data Science (GDS) to create these embeddings. See code here The embeddings create common co-purchase clusters as seen below
+//TODO: TSNE plot snapshot (from notebook - make a gif)
 
 The Retrieval Query looks like this
-//TODO: Query template
+//TODO coded markdown example?
+
 And the LLM chain....
+
 //TODO: code snippit
-The LLM is given some creative authority to choose between mix and match items based on it's own language understanding of fasion and seasonality.
+The LLM is given some creative authority to choose between and mix and match items based on its own language understanding and seasonality.
 //TODO: prompt template code snippit
+
 === Customer Support
-//TODO: this is just a simple chat interface that uses quantified path pattern to pull in facts/policies....KG builder based
+
+The customer support page follows a basic chatbot workflow with the addition of an extra knowledge graph retriever shown below.  The frontend holds conversation history. When a user asks a question, the question and conversation history is sent to a condense_question chain to summarize into a single prompt.  That is then sent to retrieve relevant documents and knowledge graph entities which, in turn, is added to a final prompt template to generate an LLM response and send back to chat.
+
+image:ai-cust-exp-app-support-flow.png[align=center]
+
+This page uses a different part of the graph then the others. This part contains text chunks from a document as well as various knowledge graph entities and relationships extracted from those text chunks using the https://neo4j.com/labs/genai-ecosystem/llm-graph-builder/[LLM Knowledge Graph Builder^].
+
+The extracted entities acts as facts or "rules" that the LLM should prioritize when responding.  This workflow is designed for scenarios where nuanced domain context and logic needs to be followed by an LLM (such as policies or specific business logic). Extracting this from documents and expressing as entities and relationships in a knowledge graph more efficiently and accurately exposes this information to LLMs.
 
 
 
