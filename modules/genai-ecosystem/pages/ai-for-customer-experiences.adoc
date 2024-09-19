@@ -42,17 +42,16 @@ The git repository has directions for creating the database from source data if 
 [source, bash]
 ----
 #Neo4j Database
-NEO4J_URI=neo4j+s://demo.neo4jlabs.com
+NEO4J_URI=neo4j+s://b5d4f951.databases.neo4j.io
 NEO4J_USERNAME=retail
-NEO4J_PASSWORD=retail
-NEO4J_DATABASE=retail
+NEO4J_PASSWORD=pleaseletmein
+NEO4J_DATABASE=neo4j
 
 #OpenAI
 OPENAI_API_KEY=sk-...
 
 #Other
-# used by UI to navigate between pages.
-# Only change for
+# Used by UI to navigate between pages. Only change when hosting remotely
 ADVERTISED_ADDRESS="http://localhost"
 ----
 
