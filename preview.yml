@@ -1,7 +1,7 @@
 site:
   title: Neo4j Developer Portal
   url: /developer
-  start_page: developer:geni-ecosystem:index.adoc
+  start_page: developer:genai-ecosystem:index.adoc
 
 content:
   sources:
