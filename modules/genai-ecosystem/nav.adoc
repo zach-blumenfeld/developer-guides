@@ -1,4 +1,4 @@
-** xref:index.adoc[GraphRAG Dev Guide]
+** xref:index.adoc[GraphRAG]
 
 *** GraphRAG Examples
 **** xref:ai-for-customer-experiences.adoc[GraphRAG for Customer Experience]
